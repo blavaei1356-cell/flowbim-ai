@@ -1,13 +1,29 @@
 import os
 import hmac
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 app = Flask(__name__)
 
+CORS(
+    app,
+    resources={
+        r"/calculate": {
+            "origins": [
+                "https://hoppscotch.io",
+                "https://www.flowbim.ir",
+                "https://flowbim.ir"
+            ]
+        }
+    },
+    methods=["POST", "OPTIONS"],
+    allow_headers=["Content-Type", "X-FlowBIM-Key"]
+)
+
 API_SECRET = os.environ.get("FLOWBIM_API_SECRET", "")
 
-def is_authorized(request):
-    provided_secret = request.headers.get("X-FlowBIM-Key", "")
+def is_authorized(req):
+    provided_secret = req.headers.get("X-FlowBIM-Key", "")
     return bool(API_SECRET) and hmac.compare_digest(provided_secret, API_SECRET)
 
 @app.get("/")
